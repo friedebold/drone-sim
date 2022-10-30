@@ -1,20 +1,75 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import React, { useState } from "react";
+import { SafeAreaView } from "react-native";
+import styled from "styled-components/native";
+import Flight from "./src/Flight";
+import Planner from "./src/Planner";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+export interface FlightData {
+	mode: string;
+	frontThrustComponents: ThrustComponents;
+	backThrustComponents: ThrustComponents;
+	vertical: {
+		acceleration: number;
+		velocity: number;
+		distance: number;
+	};
+	horizontal: {
+		acceleration: number;
+		velocity: number;
+		distance: number;
+	};
+	pitchAngle: number;
+	logger: string;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export interface ThrustComponents {
+	total: number;
+	vertical: number;
+	horizontal: number;
+}
+
+export interface FlightOptions {
+	targetAltitude: number;
+	targetDistance: number;
+	aircraftType: string;
+}
+
+const App: React.FC<{}> = ({}) => {
+	const [flightOptions, setFlightOptions] = useState({
+		targetAltitude: 40,
+		targetDistance: 40,
+		aircraftType: "quad",
+	});
+	const [plannerMode, setPlannerMode] = useState(true);
+	const [flightData, setFlightData] = useState<FlightData[]>([]);
+
+	const Background = styled.View`
+		flex: 1;
+	`;
+
+	return (
+		<SafeAreaView style={{ flex: 1 }}>
+			<Background>
+				<StatusBar style="dark" />
+				{plannerMode ? (
+					<Planner
+						{...{ flightOptions }}
+						{...{ setFlightOptions }}
+						{...{ setFlightData }}
+						{...{ plannerMode }}
+						{...{ setPlannerMode }}
+					/>
+				) : (
+					<Flight
+						{...{ flightOptions }}
+						{...{ flightData }}
+						{...{ setPlannerMode }}
+					/>
+				)}
+			</Background>
+		</SafeAreaView>
+	);
+};
+
+export default App;
