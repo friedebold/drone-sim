@@ -1,84 +1,119 @@
-import React from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { Button, Text, TextInput, TouchableOpacity, View } from "react-native";
 import styled from "styled-components/native";
 import { FlightOptions } from "../App";
 import { margin } from "../constants";
 
 interface Props {
-	flightOptions: FlightOptions;
-	setFlightOptions: React.Dispatch<React.SetStateAction<FlightOptions>>;
+	setOptions: React.Dispatch<React.SetStateAction<FlightOptions>>;
 }
 
-const FlightOptionInputs: React.FC<Props> = ({
-	flightOptions,
-	setFlightOptions,
-}) => {
-	const changeState = (e: string, property: string) => {
-		if (!isNaN(Number(e))) {
-			setFlightOptions((currState: FlightOptions) => ({
-				...currState,
-				[property]: Number(e),
-			}));
-		}
+const FlightOptionInputs: React.FC<Props> = ({ setOptions }) => {
+	const [targetAltitude, setTargetAltitude] = useState(40);
+	const [targetDistance, setTargetDistance] = useState(40);
+	const [maxPitch, setMaxPitch] = useState(45);
+	const [aircraftType, setAircraftType] = useState("quad");
+	const [disableHorizontal, setDisableHorizontal] = useState<boolean>(false);
+
+	const save_input = () => {
+		setOptions({
+			targetAltitude: targetAltitude,
+			targetDistance: targetDistance,
+			aircraftType: aircraftType,
+			disableHorizontal: disableHorizontal,
+			maxPitch: maxPitch,
+		});
 	};
 
 	return (
 		<>
+			<View style={{ height: margin / 2 }} />
 			<Text>{"Altitude (m):"}</Text>
 			<Input
-				value={flightOptions.targetAltitude.toString()}
+				value={targetAltitude.toString()}
 				onChangeText={(e: string) => {
-					setFlightOptions;
-					changeState(e, "targetAltitude");
+					const number = Number(e);
+					if (!isNaN(number)) {
+						setTargetAltitude(number);
+					}
 				}}
 			/>
 			<View style={{ height: margin / 2 }} />
 			<Text>{"Distance (m):"}</Text>
 			<Input
-				value={flightOptions.targetDistance.toString()}
-				onChangeText={(e: string) => changeState(e, "targetDistance")}
+				value={targetDistance.toString()}
+				onChangeText={(e: string) => {
+					const number = Number(e);
+					if (!isNaN(number)) {
+						setTargetDistance(number);
+					}
+				}}
+			/>
+			<View style={{ height: margin / 2 }} />
+			<Text>{"Tilt Angle:"}</Text>
+			<Input
+				value={maxPitch.toString()}
+				onChangeText={(e: string) => {
+					const number = Number(e);
+					if (!isNaN(number)) {
+						setMaxPitch(number);
+					}
+				}}
 			/>
 			<View style={{ height: margin / 2 }} />
 			<View style={{ flexDirection: "row" }}>
-				<TouchableOpacity
-					onPress={() => {
-						setFlightOptions((currState: FlightOptions) => ({
-							...currState,
-							aircraftType: "quad",
-						}));
-					}}
-				>
+				<TouchableOpacity onPress={() => setAircraftType("quad")}>
 					<Toggle
 						style={{
 							backgroundColor:
-								flightOptions.aircraftType == "quad"
-									? "lightgrey"
-									: "white",
+								aircraftType == "quad" ? "white" : "lightgrey",
 						}}
 					>
 						<Text>Quad</Text>
 					</Toggle>
 				</TouchableOpacity>
 				<TouchableOpacity
-					onPress={() => {
-						setFlightOptions((currState: FlightOptions) => ({
-							...currState,
-							aircraftType: "tail_sitter",
-						}));
-					}}
+					onPress={() => setAircraftType("tail_sitter")}
 				>
 					<Toggle
 						style={{
 							backgroundColor:
-								flightOptions.aircraftType == "tail_sitter"
-									? "lightgrey"
-									: "white",
+								aircraftType == "tail_sitter"
+									? "white"
+									: "lightgrey",
 						}}
 					>
 						<Text>Tail Sitter</Text>
 					</Toggle>
 				</TouchableOpacity>
 			</View>
+
+			<View style={{ height: margin / 2 }} />
+			<View style={{ flexDirection: "row" }}>
+				<TouchableOpacity
+					onPress={() => {
+						setDisableHorizontal((curr: boolean) => !curr);
+					}}
+				>
+					<Toggle
+						style={{
+							backgroundColor: disableHorizontal
+								? "white"
+								: "lightgrey",
+						}}
+					>
+						<Text>Disable Horizontal Modement</Text>
+					</Toggle>
+				</TouchableOpacity>
+				<View style={{ height: margin / 2 }} />
+			</View>
+			<View style={{ height: margin / 2 }} />
+			<Button
+				title="Go"
+				onPress={() => {
+					save_input();
+				}}
+			/>
 		</>
 	);
 };

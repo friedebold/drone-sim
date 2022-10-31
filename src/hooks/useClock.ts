@@ -1,22 +1,22 @@
-import { useEffect } from "react";
-import { Easing } from "react-native";
-import {
-	runOnUI,
+import Animated, {
+	Easing,
 	useAnimatedReaction,
 	useDerivedValue,
 	useSharedValue,
 	withTiming
 } from "react-native-reanimated";
 
-export const useClock = () => {
-	const clock = useSharedValue(0);
-
-	const runClock = async () => {
-		const NR_OF_SEC = 1000000;
+export const useClock = (
+	clock: Animated.SharedValue<number>,
+	clock_running: Animated.SharedValue<boolean>
+) => {
+	const runClock = () => {
+		"worklet";
+		const NR_OF_SEC = 20;
 		clock.value = withTiming(
 			NR_OF_SEC,
 			{
-				duration: NR_OF_SEC * 1000,
+				duration: NR_OF_SEC * 1000 - clock.value,
 				easing: Easing.linear,
 			},
 			(finished) => {
@@ -27,9 +27,14 @@ export const useClock = () => {
 		);
 	};
 
-	useEffect(() => {
-		runOnUI(runClock)();
-	}, []);
+	useAnimatedReaction(
+		() => clock_running.value,
+		(clock_running) => {
+			if (clock_running) {
+				runClock();
+			}
+		}
+	);
 
 	const formatedClock = useDerivedValue(() => {
 		return Number((Math.round(clock.value * 100) / 100).toFixed(2));

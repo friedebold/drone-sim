@@ -19,7 +19,13 @@ export interface FlightData {
 		velocity: number;
 		distance: number;
 	};
-	pitchAngle: number;
+	pitch: {
+		acceleration: number;
+		velocity: number;
+		distance: number;
+		degree: number;
+		rad: number;
+	};
 	logger: string;
 }
 
@@ -33,38 +39,43 @@ export interface FlightOptions {
 	targetAltitude: number;
 	targetDistance: number;
 	aircraftType: string;
+	disableHorizontal: boolean;
+	maxPitch: number;
 }
 
 const App: React.FC<{}> = ({}) => {
-	const [flightOptions, setFlightOptions] = useState({
-		targetAltitude: 40,
-		targetDistance: 40,
-		aircraftType: "quad",
+	const [data, setData] = useState<FlightData[]>([]);
+	const [options, setOptions] = useState<FlightOptions>({
+		targetAltitude: 0,
+		targetDistance: 0,
+		aircraftType: "",
+		disableHorizontal: false,
+		maxPitch: 0,
 	});
-	const [plannerMode, setPlannerMode] = useState(true);
-	const [flightData, setFlightData] = useState<FlightData[]>([]);
+	const [navigation, setNavigation] = useState<string>("input");
 
 	const Background = styled.View`
 		flex: 1;
+		background-color: #e2e2e5;
 	`;
 
 	return (
 		<SafeAreaView style={{ flex: 1 }}>
 			<Background>
 				<StatusBar style="dark" />
-				{plannerMode ? (
+				{navigation == "input" || navigation == "planner" ? (
 					<Planner
-						{...{ flightOptions }}
-						{...{ setFlightOptions }}
-						{...{ setFlightData }}
-						{...{ plannerMode }}
-						{...{ setPlannerMode }}
+						{...{ options }}
+						{...{ setOptions }}
+						{...{ setData }}
+						{...{ navigation }}
+						{...{ setNavigation }}
 					/>
 				) : (
 					<Flight
-						{...{ flightOptions }}
-						{...{ flightData }}
-						{...{ setPlannerMode }}
+						{...{ setNavigation }}
+						{...{ options }}
+						{...{ data }}
 					/>
 				)}
 			</Background>

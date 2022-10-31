@@ -17,7 +17,13 @@ interface Props {
 		velocity: number;
 		distance: number;
 	}>;
-	pitch_angle: Animated.SharedValue<number>;
+	pitch: Animated.SharedValue<{
+		acceleration: number;
+		velocity: number;
+		distance: number;
+		degree: number;
+		rad: number;
+	}>;
 	back_thrust_components: Animated.SharedValue<ThrustComponents>;
 	front_thrust_components: Animated.SharedValue<ThrustComponents>;
 }
@@ -25,7 +31,7 @@ interface Props {
 const Aircraft: React.FC<Props> = ({
 	vertical,
 	horizontal,
-	pitch_angle,
+	pitch,
 	back_thrust_components,
 	front_thrust_components,
 }) => {
@@ -42,13 +48,13 @@ const Aircraft: React.FC<Props> = ({
 				width / 2 -
 				aircraft_width / 2 +
 				(horizontal.value.distance / 10) * LAT_DISTANCE,
-			transform: [{ rotate: pitch_angle.value + "deg" }],
+			transform: [{ rotate: pitch.value.degree + "deg" }],
 		};
 	});
 
 	const animatedVectorBox = useAnimatedStyle(() => {
 		return {
-			transform: [{ rotate: -pitch_angle.value + "deg" }],
+			transform: [{ rotate: -pitch.value.degree + "deg" }],
 			height: back_thrust_components.value.vertical * 2 * thrustScaler,
 			width: back_thrust_components.value.horizontal * 2 * thrustScaler,
 			left: -back_thrust_components.value.horizontal * thrustScaler, //-back_thrust.value * thrustScaler,
@@ -60,7 +66,7 @@ const Aircraft: React.FC<Props> = ({
 
 	const animatedFrontVectorBox = useAnimatedStyle(() => {
 		return {
-			transform: [{ rotate: -pitch_angle.value + "deg" }],
+			transform: [{ rotate: -pitch.value.degree + "deg" }],
 			height: front_thrust_components.value.vertical * 2 * thrustScaler,
 			width: front_thrust_components.value.horizontal * 2 * thrustScaler,
 			left:
@@ -161,8 +167,8 @@ const Background = styled(Animated.View)`
 	width: ${aircraft_width}px;
 	height: ${aircraft_width}px;
 	border-radius: ${aircraft_width / 2}px;
-	border-width: 1;
-	border-color: red;
+	border-width: 1px;
+	border-color: #ff000038;
 	position: absolute;
 	flex-direction: row;
 `;
@@ -177,9 +183,9 @@ const Fulselage = styled.View`
 
 const AircraftComp = styled(Animated.View)`
 	position: absolute;
-	width: ${stator_width};
-	height: ${stator_width};
-	border-radius: ${stator_width / 2};
+	width: ${stator_width}px;
+	height: ${stator_width}px;
+	border-radius: ${stator_width / 2}px;
 	border-width: 1px;
 	border-color: black;
 	background-color: white;

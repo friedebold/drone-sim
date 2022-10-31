@@ -1,13 +1,10 @@
-import { FlightOptions } from "../App";
-import { MAX_THRUST_PER_SIDE } from "../constants";
-
-export const round = (num: number) => {
-	return Math.round(num * 10000) / 10000;
-};
+import { FlightOptions } from "../../App";
+import { MAX_THRUST_PER_SIDE } from "../../constants";
+import { round } from "./common";
 
 export const runTakeoff = (
 	engines_running: boolean,
-	flightOptions: FlightOptions,
+	options: FlightOptions,
 	vAcceleration: number,
 	vVelocity: number,
 	vDistance: number,
@@ -24,7 +21,7 @@ export const runTakeoff = (
 		for (let j = 0; j <= 2000; j++) {
 			potVelocity = potVelocity + potAcceleration / 100;
 			potAltitude = potAltitude + potVelocity / 100;
-			if (potAltitude >= flightOptions.targetAltitude) {
+			if (potAltitude >= options.targetAltitude) {
 				engines_running = false;
 				break;
 			}
@@ -33,7 +30,7 @@ export const runTakeoff = (
 
 	// Switch to Cruise
 	if (
-		vDistance >= flightOptions.targetAltitude * 0.5 &&
+		vDistance >= options.targetAltitude * 0.5 &&
 		vVelocity == 0 &&
 		vAcceleration == 0
 	) {
@@ -50,10 +47,7 @@ export const runTakeoff = (
 	}
 
 	// Hover
-	else if (
-		vDistance >= flightOptions.targetAltitude * 0.5 &&
-		vVelocity <= 0
-	) {
+	else if (vDistance >= options.targetAltitude * 0.5 && vVelocity <= 0) {
 		front_thrust = 9.81 / 2;
 		back_thrust = 9.81 / 2;
 	}
