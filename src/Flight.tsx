@@ -1,5 +1,10 @@
 import React from "react";
-import { Text, useWindowDimensions, View } from "react-native";
+import {
+	Text,
+	TouchableWithoutFeedback,
+	useWindowDimensions,
+	View
+} from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
 	cancelAnimation,
@@ -113,7 +118,6 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 	const active = useSharedValue(false);
 	const panGesture = Gesture.Pan()
 		.onBegin((e) => {
-			console.log("click...");
 			start_clock.value = clock.value;
 			if (clock_running.value) {
 				console.log("stop clock!!");
@@ -135,7 +139,7 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 		})
 		.onFinalize(() => {
 			console.log("final");
-			if (!active.value) {
+			/* if (!active.value) {
 				if (clock_running.value) {
 					console.log("stop clock!!");
 					clock_running.value = false;
@@ -144,7 +148,9 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 					console.log("start clock!!");
 					clock_running.value = true;
 				}
-			}
+			} */
+			/* clock_running.value = true; */
+
 			active.value = false;
 		})
 		.onEnd((e) => {
@@ -159,13 +165,15 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 		return {
 			backgroundColor: clock_running.value ? "white" : "#e2e2e5",
 		};
-	});
+	}, [clock_running]);
 
-	const set_running = () => {
+	const toggle_clock_running = () => {
 		"worklet";
-		console.log("stop clock!!");
-		clock_running.value = false;
-		cancelAnimation(clock);
+		console.log("click...");
+		if (clock_running.value) {
+			clock_running.value = false;
+			cancelAnimation(clock);
+		} else clock_running.value = !clock_running.value;
 	};
 
 	return (
@@ -175,84 +183,91 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 					set_running();
 				}}
 			> */}
-			<Animated.View
-				style={[
-					animatedBackgroundStyle,
-					{
-						justifyContent: "space-between",
-						flex: 1,
-					},
-				]}
+			<TouchableWithoutFeedback
+				onPress={() => {
+					"worklet";
+					console.log("toggle clock!!");
+					toggle_clock_running();
+				}}
 			>
-				<Grid />
-				<Aircraft
-					{...{ vertical }}
-					{...{ horizontal }}
-					{...{ pitch }}
-					{...{ back_thrust_components }}
-					{...{ front_thrust_components }}
-				/>
+				<Animated.View
+					style={[
+						animatedBackgroundStyle,
+						{
+							justifyContent: "space-between",
+							flex: 1,
+						},
+					]}
+				>
+					<Grid />
+					<Aircraft
+						{...{ vertical }}
+						{...{ horizontal }}
+						{...{ pitch }}
+						{...{ back_thrust_components }}
+						{...{ front_thrust_components }}
+					/>
 
-				<BackButton onPress={() => setNavigation("input")}>
-					<Text>x</Text>
-				</BackButton>
-				<View>
-					<View
-						style={{
-							flexDirection: "row",
-							alignItems: "stretch",
-						}}
-					>
-						<View style={{ margin: margin }}>
-							<Text>{"Vertical"}</Text>
-							<Text>{"Acceleration"}</Text>
-							<Text>{"Velocity"}</Text>
-							<Text>{"Distance"}</Text>
-							{/* <AnimatedText text={text(vertical)} /> */}
+					<BackButton onPress={() => setNavigation("input")}>
+						<Text>x</Text>
+					</BackButton>
+					<View>
+						<View
+							style={{
+								flexDirection: "row",
+								alignItems: "stretch",
+							}}
+						>
+							<View style={{ margin: margin }}>
+								<Text>{"Vertical"}</Text>
+								<Text>{"Acceleration"}</Text>
+								<Text>{"Velocity"}</Text>
+								<Text>{"Distance"}</Text>
+								{/* <AnimatedText text={text(vertical)} /> */}
+							</View>
+							<View style={{ margin: margin }}>
+								<Text>{"Horizontal"}</Text>
+								<Text>{"Acceleration"}</Text>
+								<Text>{"Velocity"}</Text>
+								<Text>{"Distance"}</Text>
+							</View>
+							<View style={{ margin: margin }}>
+								<Text>{"Pitch"}</Text>
+								<Text>{"Acceleration"}</Text>
+								<Text>{"Velocity"}</Text>
+								<Text>{"Distance"}</Text>
+							</View>
 						</View>
-						<View style={{ margin: margin }}>
-							<Text>{"Horizontal"}</Text>
-							<Text>{"Acceleration"}</Text>
-							<Text>{"Velocity"}</Text>
-							<Text>{"Distance"}</Text>
-						</View>
-						<View style={{ margin: margin }}>
-							<Text>{"Pitch"}</Text>
-							<Text>{"Acceleration"}</Text>
-							<Text>{"Velocity"}</Text>
-							<Text>{"Distance"}</Text>
-						</View>
+						<Animated.View
+							style={[
+								clockBarStyle,
+								{
+									height: 2,
+									backgroundColor: "black",
+								},
+							]}
+						></Animated.View>
+
+						<Overview>
+							<Box style={getBoxStyle("takeoff")}>
+								<Text>Takeoff</Text>
+							</Box>
+							<Box style={getBoxStyle("tilt_to_cruise")}>
+								<Text>Tilt to Cruise</Text>
+							</Box>
+							<Box style={getBoxStyle("cruise")}>
+								<Text>Cruise</Text>
+							</Box>
+							<Box style={getBoxStyle("tilt_to_land")}>
+								<Text>Tilt to Land</Text>
+							</Box>
+							<Box style={getBoxStyle("landing")}>
+								<Text>Landing</Text>
+							</Box>
+						</Overview>
 					</View>
-
-					<Animated.View
-						style={[
-							clockBarStyle,
-							{
-								height: 2,
-								backgroundColor: "black",
-							},
-						]}
-					></Animated.View>
-
-					<Overview>
-						<Box style={getBoxStyle("takeoff")}>
-							<Text>Takeoff</Text>
-						</Box>
-						<Box style={getBoxStyle("tilt_to_cruise")}>
-							<Text>Tilt to Cruise</Text>
-						</Box>
-						<Box style={getBoxStyle("cruise")}>
-							<Text>Cruise</Text>
-						</Box>
-						<Box style={getBoxStyle("tilt_to_land")}>
-							<Text>Tilt to Land</Text>
-						</Box>
-						<Box style={getBoxStyle("landing")}>
-							<Text>Landing</Text>
-						</Box>
-					</Overview>
-				</View>
-			</Animated.View>
+				</Animated.View>
+			</TouchableWithoutFeedback>
 			{/* </TouchableWithoutFeedback> */}
 		</GestureDetector>
 	);
