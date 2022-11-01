@@ -169,7 +169,6 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 
 	const toggle_clock_running = () => {
 		"worklet";
-		console.log("click...");
 		if (clock_running.value) {
 			clock_running.value = false;
 			cancelAnimation(clock);
