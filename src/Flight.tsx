@@ -196,13 +196,33 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 				<BackButton onPress={() => setNavigation("input")}>
 					<Text>x</Text>
 				</BackButton>
-
 				<View>
-					<Text>{"Target Altitude (m):"}</Text>
-					<Text>{options.targetAltitude}</Text>
-					{/* <AnimatedText text={text(vertical)} />
-				<AnimatedText text={altitudeText} />
-				<AnimatedText text={altitudeText} /> */}
+					<View
+						style={{
+							flexDirection: "row",
+							alignItems: "stretch",
+						}}
+					>
+						<View style={{ margin: margin }}>
+							<Text>{"Vertical"}</Text>
+							<Text>{"Acceleration"}</Text>
+							<Text>{"Velocity"}</Text>
+							<Text>{"Distance"}</Text>
+							{/* <AnimatedText text={text(vertical)} /> */}
+						</View>
+						<View style={{ margin: margin }}>
+							<Text>{"Horizontal"}</Text>
+							<Text>{"Acceleration"}</Text>
+							<Text>{"Velocity"}</Text>
+							<Text>{"Distance"}</Text>
+						</View>
+						<View style={{ margin: margin }}>
+							<Text>{"Pitch"}</Text>
+							<Text>{"Acceleration"}</Text>
+							<Text>{"Velocity"}</Text>
+							<Text>{"Distance"}</Text>
+						</View>
+					</View>
 
 					<Animated.View
 						style={[

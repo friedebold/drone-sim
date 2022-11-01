@@ -1,10 +1,14 @@
 import { FlightOptions } from "../../App";
+import { MAX_THRUST_PER_SIDE } from "../../constants";
 
 export const adjust_for_horizontal = (
 	thrust_total: number,
 	pitch_angle: number
 ) => {
-	return thrust_total / Math.cos((pitch_angle * Math.PI) / 180);
+	return Math.min(
+		thrust_total / Math.cos((pitch_angle * Math.PI) / 180),
+		MAX_THRUST_PER_SIDE
+	);
 };
 
 export const runTiltToCruise = (

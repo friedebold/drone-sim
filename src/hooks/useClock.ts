@@ -22,6 +22,7 @@ export const useClock = (
 			(finished) => {
 				if (finished === true) {
 					clock.value = 0;
+					clock_running.value = false
 				}
 			}
 		);
