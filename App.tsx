@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-import { SafeAreaView } from "react-native";
+import { SafeAreaView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
 import Flight from "./src/Flight";
 import Planner from "./src/Planner";
@@ -44,6 +44,7 @@ export interface FlightOptions {
 }
 
 const App: React.FC<{}> = ({}) => {
+	const { width } = useWindowDimensions();
 	const [data, setData] = useState<FlightData[]>([]);
 	const [options, setOptions] = useState<FlightOptions>({
 		targetAltitude: 0,
@@ -56,6 +57,8 @@ const App: React.FC<{}> = ({}) => {
 
 	const Background = styled.View`
 		flex: 1;
+		width: ${width}px;
+		overflow: hidden;
 		background-color: #e2e2e5;
 	`;
 

@@ -55,6 +55,8 @@ export const calculateFlight = (options: FlightOptions) => {
 			const results = runTiltToCruise(
 				options,
 				tilting,
+				vAcceleration,
+				vVelocity,
 				pitch_angle,
 				pitchVelocity,
 				pitchAcceleration,
@@ -72,15 +74,6 @@ export const calculateFlight = (options: FlightOptions) => {
 		}
 		if (mode == "cruise") {
 			// Reverse Thrust
-			if (hDistance >= 20) {
-				mode = "tilt_to_land";
-				tilting = true;
-			}
-			// Idle
-			else {
-				//front_thrust = round(9.81 / 2);
-				//back_thrust = round(9.81 / 2);
-			}
 		}
 		/* 	if (mode == "tilt_to_land") {
 				//TILT CUTTOFF

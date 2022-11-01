@@ -8,6 +8,7 @@ import {
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
 	cancelAnimation,
+	runOnJS,
 	useAnimatedReaction,
 	useAnimatedStyle,
 	useSharedValue,
@@ -17,6 +18,7 @@ import styled from "styled-components/native";
 import { FlightData, FlightOptions } from "../App";
 import { margin } from "../constants";
 import Aircraft from "./Aircraft";
+import DataPanel from "./DataPanel";
 import Grid from "./Grid";
 import { useClock } from "./hooks/useClock";
 
@@ -76,6 +78,8 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 				horizontal.value = data[rounded_clock].horizontal;
 				pitch.value = data[rounded_clock].pitch;
 
+				console.log(clock);
+
 				/* console.log(
 					rounded_clock,
 					back_thrust_components.value.total,
@@ -110,7 +114,7 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 
 	const clockBarStyle = useAnimatedStyle(() => {
 		return {
-			width: clock.value * 10 + "%",
+			width: (clock.value / 20) * width,
 		};
 	});
 
@@ -120,16 +124,9 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 		.onBegin((e) => {
 			start_clock.value = clock.value;
 			if (clock_running.value) {
-				console.log("stop clock!!");
 				clock_running.value = false;
 				cancelAnimation(clock);
 			}
-		})
-		.onTouchesDown((e) => {
-			console.log("down");
-		})
-		.onTouchesUp((e) => {
-			console.log("up");
 		})
 		.onChange((e) => {
 			active.value = true;
@@ -138,7 +135,6 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 			clock.value = clamped_drag_clock;
 		})
 		.onFinalize(() => {
-			console.log("final");
 			/* if (!active.value) {
 				if (clock_running.value) {
 					console.log("stop clock!!");
@@ -154,7 +150,6 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 			active.value = false;
 		})
 		.onEnd((e) => {
-			console.log("end");
 			clock.value = withDecay({
 				velocity: e.velocityX / 80,
 				clamp: [0, 20], // optionally define boundaries for the animation
@@ -177,16 +172,9 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 
 	return (
 		<GestureDetector gesture={panGesture}>
-			{/* <TouchableWithoutFeedback
-				onPress={() => {
-					set_running();
-				}}
-			> */}
 			<TouchableWithoutFeedback
 				onPress={() => {
-					"worklet";
-					console.log("toggle clock!!");
-					toggle_clock_running();
+					runOnJS(toggle_clock_running)();
 				}}
 			>
 				<Animated.View
@@ -211,32 +199,12 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 						<Text>x</Text>
 					</BackButton>
 					<View>
-						<View
-							style={{
-								flexDirection: "row",
-								alignItems: "stretch",
-							}}
-						>
-							<View style={{ margin: margin }}>
-								<Text>{"Vertical"}</Text>
-								<Text>{"Acceleration"}</Text>
-								<Text>{"Velocity"}</Text>
-								<Text>{"Distance"}</Text>
-								{/* <AnimatedText text={text(vertical)} /> */}
-							</View>
-							<View style={{ margin: margin }}>
-								<Text>{"Horizontal"}</Text>
-								<Text>{"Acceleration"}</Text>
-								<Text>{"Velocity"}</Text>
-								<Text>{"Distance"}</Text>
-							</View>
-							<View style={{ margin: margin }}>
-								<Text>{"Pitch"}</Text>
-								<Text>{"Acceleration"}</Text>
-								<Text>{"Velocity"}</Text>
-								<Text>{"Distance"}</Text>
-							</View>
-						</View>
+						<DataPanel
+							{...{ clock }}
+							{...{ pitch }}
+							{...{ vertical }}
+							{...{ horizontal }}
+						/>
 						<Animated.View
 							style={[
 								clockBarStyle,
@@ -267,7 +235,6 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 					</View>
 				</Animated.View>
 			</TouchableWithoutFeedback>
-			{/* </TouchableWithoutFeedback> */}
 		</GestureDetector>
 	);
 };
