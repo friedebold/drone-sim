@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, useWindowDimensions, View, ViewStyle } from "react-native";
 import styled from "styled-components/native";
-import { LAT_DISTANCE, LON_DISTANCE } from "../constants";
+import { LAT_DISTANCE, LON_DISTANCE } from "./constants";
 
 interface Props {}
 

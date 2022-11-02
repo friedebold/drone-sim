@@ -2,7 +2,7 @@ import React from "react";
 import { Text, useWindowDimensions, View } from "react-native";
 import Animated, { useDerivedValue } from "react-native-reanimated";
 import { ReText } from "react-native-redash";
-import { aircraft_mass, margin } from "../constants";
+import { aircraft_mass, margin } from "../src/constants";
 
 interface Props {
   clock: Animated.SharedValue<number>;

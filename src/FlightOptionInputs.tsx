@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Button, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import styled from "styled-components/native";
 import { FlightOptions } from "../App";
-import { margin } from "../constants";
+import { margin } from "./constants";
 
 interface Props {
 	setOptions: React.Dispatch<React.SetStateAction<FlightOptions>>;
@@ -108,12 +108,19 @@ const FlightOptionInputs: React.FC<Props> = ({ setOptions }) => {
 				<View style={{ height: margin / 2 }} />
 			</View>
 			<View style={{ height: margin / 2 }} />
-			<Button
-				title="Go"
+			<TouchableOpacity
+				style={{
+					backgroundColor: "#55ad5e",
+					height: 100,
+					justifyContent: "center",
+					alignItems: "center",
+				}}
 				onPress={() => {
 					save_input();
 				}}
-			/>
+			>
+				<Text style={{ fontSize: 30, color: "white" }}>Go</Text>
+			</TouchableOpacity>
 		</>
 	);
 };

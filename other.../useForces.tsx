@@ -1,16 +1,16 @@
 import {
-  Easing,
-  useDerivedValue,
-  useSharedValue,
-  withTiming
+    Easing,
+    useDerivedValue,
+    useSharedValue,
+    withTiming
 } from "react-native-reanimated";
 import {
-  aircraft_mass,
-  earth_mass,
-  earth_radius,
-  gravitational_constant,
-  maxForce
-} from "../constants";
+    aircraft_mass,
+    earth_mass,
+    earth_radius,
+    gravitational_constant,
+    maxForce
+} from "../src/constants";
 
 export const useForces = (mode: "altitude" | "thrust") => {
   const target_altitude = useSharedValue(0);

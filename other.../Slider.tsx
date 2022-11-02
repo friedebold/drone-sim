@@ -2,15 +2,15 @@ import React from "react";
 import { Text, View } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
-  SharedValue,
-  useAnimatedGestureHandler,
-  useAnimatedReaction,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring
+    SharedValue,
+    useAnimatedGestureHandler,
+    useAnimatedReaction,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring
 } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { margin, maxForce } from "../constants";
+import { margin, maxForce } from "../src/constants";
 
 interface Props {
   thrust: SharedValue<{

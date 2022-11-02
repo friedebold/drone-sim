@@ -4,7 +4,7 @@ import { useWindowDimensions, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useSharedValue } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { colors, margin } from "../constants";
+import { colors, margin } from "../src/constants";
 import Aircraft from "./Aircraft";
 import AltitudeBar from "./AltitudeBar";
 import AltitudeInput from "./AltitudeInput";

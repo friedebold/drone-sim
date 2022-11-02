@@ -2,6 +2,7 @@ import { FlightData, FlightOptions } from "../../App";
 import { round } from "./common";
 import { runTakeoff } from "./takeoff";
 import { runTiltToCruise } from "./tilt_to_cruise";
+import { runTiltToLand } from "./tilt_to_land";
 
 export const calculateFlight = (options: FlightOptions) => {
 	const flightData: FlightData[] = [];
@@ -27,6 +28,7 @@ export const calculateFlight = (options: FlightOptions) => {
 	let logger = "";
 
 	for (let i = 0; i <= 2000; i++) {
+		logger = "";
 		//TAKEOFF
 		if (mode == "takeoff") {
 			const results = runTakeoff(
@@ -71,9 +73,33 @@ export const calculateFlight = (options: FlightOptions) => {
 			mode = results.mode;
 			back_thrust = results.back_thrust;
 			front_thrust = results.front_thrust;
+			vVelocity = results.vVelocity;
 		}
 		if (mode == "cruise") {
+			if (hDistance >= 30) {
+				mode = "tilt_to_land";
+			}
 			// Reverse Thrust
+		}
+		if (mode == "tilt_to_land") {
+			const results = runTiltToLand(
+				options,
+				tilting,
+				mode,
+				pitch_angle,
+				pitchAcceleration,
+				pitchVelocity,
+				front_thrust,
+				back_thrust,
+				logger
+			);
+			logger = results.logger;
+			tilting = results.tilting;
+			pitchVelocity = results.pitchVelocity;
+			pitchAcceleration = results.pitchAcceleration;
+			mode = results.mode;
+			back_thrust = results.back_thrust;
+			front_thrust = results.front_thrust;
 		}
 		/* 	if (mode == "tilt_to_land") {
 				//TILT CUTTOFF

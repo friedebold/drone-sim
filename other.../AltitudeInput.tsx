@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Keyboard, Text, TextInput, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import Animated, { runOnUI } from "react-native-reanimated";
-import { margin } from "../constants";
+import { margin } from "../src/constants";
 
 interface Props {
   target_altitude: Animated.SharedValue<number>;

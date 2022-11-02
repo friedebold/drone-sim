@@ -1,8 +1,8 @@
 import Animated, {
-	useAnimatedReaction,
-	useSharedValue
+    useAnimatedReaction,
+    useSharedValue
 } from "react-native-reanimated";
-import { MAX_THRUST } from "../../constants";
+import { MAX_THRUST } from "../constants";
 
 export const useThrust = (
 	clock: Animated.SharedValue<number>, // s

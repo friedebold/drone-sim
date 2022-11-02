@@ -1,7 +1,7 @@
 import React from "react";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { margin } from "../constants";
+import { margin } from "./constants";
 
 interface Props {
 	clock: Animated.SharedValue<number>;

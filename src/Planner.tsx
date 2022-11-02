@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import { FlightData, FlightOptions } from "../App";
-import { margin } from "../constants";
 import { calculateFlight } from "./calculations/main";
+import { margin } from "./constants";
 import FlightOptionInputs from "./FlightOptionInputs";
 
 interface Props {

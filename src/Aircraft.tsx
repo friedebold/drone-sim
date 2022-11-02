@@ -3,7 +3,7 @@ import { useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { ThrustComponents } from "../App";
-import { LAT_DISTANCE, LON_DISTANCE } from "../constants";
+import { LAT_DISTANCE, LON_DISTANCE } from "./constants";
 
 interface Props {
 	// flight_data: Animated.SharedValue<FlightData>;
@@ -167,8 +167,6 @@ const Background = styled(Animated.View)`
 	width: ${aircraft_width}px;
 	height: ${aircraft_width}px;
 	border-radius: ${aircraft_width / 2}px;
-	border-width: 1px;
-	border-color: #ff000038;
 	position: absolute;
 	flex-direction: row;
 `;

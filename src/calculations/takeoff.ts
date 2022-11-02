@@ -1,5 +1,5 @@
 import { FlightOptions } from "../../App";
-import { MAX_THRUST_PER_SIDE } from "../../constants";
+import { MAX_THRUST_PER_SIDE } from "../constants";
 import { round } from "./common";
 
 export const runTakeoff = (

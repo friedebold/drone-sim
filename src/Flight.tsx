@@ -16,8 +16,8 @@ import Animated, {
 } from "react-native-reanimated";
 import styled from "styled-components/native";
 import { FlightData, FlightOptions } from "../App";
-import { margin } from "../constants";
 import Aircraft from "./Aircraft";
+import { margin } from "./constants";
 import DataPanel from "./DataPanel";
 import Grid from "./Grid";
 import { useClock } from "./hooks/useClock";
@@ -78,7 +78,7 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 				horizontal.value = data[rounded_clock].horizontal;
 				pitch.value = data[rounded_clock].pitch;
 
-				console.log(clock);
+				console.log(rounded_clock / 100, data[rounded_clock].logger);
 
 				/* console.log(
 					rounded_clock,
@@ -100,17 +100,6 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 			}
 		}
 	);
-
-	const getBoxStyle = (mode_val: string) => {
-		const landingStyle = useAnimatedStyle(() => {
-			return {
-				backgroundColor:
-					mode.value == mode_val ? "white" : "transparent",
-				opacity: mode.value == mode_val ? 1 : 0.2,
-			};
-		});
-		return landingStyle;
-	};
 
 	const clockBarStyle = useAnimatedStyle(() => {
 		return {
@@ -146,8 +135,8 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 				}
 			} */
 			/* clock_running.value = true; */
-
 			active.value = false;
+			//	clock_running.value = false;
 		})
 		.onEnd((e) => {
 			clock.value = withDecay({
@@ -157,10 +146,11 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 		});
 
 	const animatedBackgroundStyle = useAnimatedStyle(() => {
+		console.log(clock_running.value);
 		return {
 			backgroundColor: clock_running.value ? "white" : "#e2e2e5",
 		};
-	}, [clock_running]);
+	});
 
 	const toggle_clock_running = () => {
 		"worklet";
@@ -204,6 +194,7 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 							{...{ pitch }}
 							{...{ vertical }}
 							{...{ horizontal }}
+							{...{ mode }}
 						/>
 						<Animated.View
 							style={[
@@ -214,24 +205,6 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 								},
 							]}
 						></Animated.View>
-
-						<Overview>
-							<Box style={getBoxStyle("takeoff")}>
-								<Text>Takeoff</Text>
-							</Box>
-							<Box style={getBoxStyle("tilt_to_cruise")}>
-								<Text>Tilt to Cruise</Text>
-							</Box>
-							<Box style={getBoxStyle("cruise")}>
-								<Text>Cruise</Text>
-							</Box>
-							<Box style={getBoxStyle("tilt_to_land")}>
-								<Text>Tilt to Land</Text>
-							</Box>
-							<Box style={getBoxStyle("landing")}>
-								<Text>Landing</Text>
-							</Box>
-						</Overview>
 					</View>
 				</Animated.View>
 			</TouchableWithoutFeedback>
@@ -249,19 +222,6 @@ const BackButton = styled.TouchableOpacity`
 	background-color: white;
 	border-width: 1px;
 	border-color: black;
-`;
-
-const Overview = styled.View`
-	flex-direction: row;
-	justify-content: space-between;
-	justify-self: flex-end;
-`;
-
-const Box = styled(Animated.View)`
-	border-color: black;
-	border-width: 1px;
-	padding: ${margin / 2}px;
-	flex: 1;
 `;
 
 export default Flight;

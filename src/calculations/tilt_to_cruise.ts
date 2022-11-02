@@ -1,5 +1,9 @@
 import { FlightOptions } from "../../App";
-import { MAX_THRUST_PER_SIDE } from "../../constants";
+import {
+	hover_thrust,
+	MAX_THRUST_PER_SIDE,
+	thrust_differential
+} from "../constants";
 import { round } from "./common";
 
 export const adjust_for_horizontal = (
@@ -25,10 +29,6 @@ export const runTiltToCruise = (
 	back_thrust: number,
 	logger: string
 ) => {
-	const hover_thrust = 9.81 / 2;
-	const thrust_differential = 4; // Math.min(MAX_THRUST_PER_SIDE, 9.81 / 2);
-	logger = pitch_angle.toString();
-
 	//TILT CUTTOFF
 	if (tilting) {
 		if (pitch_angle >= options.maxPitch / 2) {
@@ -42,39 +42,12 @@ export const runTiltToCruise = (
 		pitchVelocity == 0 &&
 		pitchAcceleration == 0
 	) {
-		// Vertical Speed Correction
-		// Speed Correction
-		if (vVelocity < 0 && vAcceleration == 0) {
-			const correction_thrust = MAX_THRUST_PER_SIDE;
-
-			front_thrust = adjust_for_horizontal(
-				correction_thrust,
-				pitch_angle
-			);
-			back_thrust = adjust_for_horizontal(correction_thrust, pitch_angle);
-			console.log("speed correct", correction_thrust);
-		} else {
-			mode = "cruise";
-		}
-		/* 
-		if (pitchVelocity < 0 && pitchAcceleration == 0) {
-			const correction_thrust = round((-pitchVelocity / 2) * 100);
-
-			front_thrust = adjust_for_horizontal(
-				9.81 / 2 - correction_thrust / 2,
-				pitch_angle
-			);
-			back_thrust = adjust_for_horizontal(
-				9.81 / 2 + correction_thrust / 2,
-				pitch_angle
-			);
-			console.log("speed correct", correction_thrust);
-		}
- */
+		logger = "speed correct: " + vVelocity;
+		mode = "cruise";
 	}
 
 	// Pitch Speed Correction
-	if (pitchVelocity < 0 && pitchAcceleration == 0) {
+	else if (pitchVelocity < 0 && pitchAcceleration == 0) {
 		const correction_thrust = round((-pitchVelocity / 2) * 100);
 
 		front_thrust = adjust_for_horizontal(
@@ -85,7 +58,6 @@ export const runTiltToCruise = (
 			9.81 / 2 + correction_thrust / 2,
 			pitch_angle
 		);
-		console.log("speed correct", correction_thrust);
 	}
 
 	// Idle
@@ -139,5 +111,6 @@ export const runTiltToCruise = (
 		mode,
 		back_thrust,
 		front_thrust,
+		vVelocity,
 	};
 };
