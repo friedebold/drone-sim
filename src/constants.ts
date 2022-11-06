@@ -18,7 +18,7 @@ export const MAX_THRUST_PER_SIDE = MAX_THRUST / 2;
 export const margin = 30;
 
 export const hover_thrust = 9.81 / 2;
-export const thrust_differential = MAX_THRUST_PER_SIDE / 2; // Math.min(MAX_THRUST_PER_SIDE, 9.81 / 2);
+export const thrust_differential = hover_thrust; // Math.min(MAX_THRUST_PER_SIDE, 9.81 / 2);
 
 /* 
 def calculate_gravity(mass, altitude):

@@ -15,6 +15,7 @@ interface Props {
 		acceleration: number;
 		velocity: number;
 		distance: number;
+		potMaxDistance: number;
 	}>;
 	horizontal: Animated.SharedValue<{
 		acceleration: number;
@@ -28,6 +29,17 @@ interface Props {
 		degree: number;
 		rad: number;
 	}>;
+	back_thrust_components: Animated.SharedValue<{
+		total: number;
+		vertical: number;
+		horizontal: number;
+	}>;
+	front_thrust_components: Animated.SharedValue<{
+		total: number;
+		vertical: number;
+		horizontal: number;
+	}>;
+
 	mode: Animated.SharedValue<string>;
 }
 
@@ -37,13 +49,45 @@ const DataPanel: React.FC<Props> = ({
 	horizontal,
 	pitch,
 	mode,
+	back_thrust_components,
+	front_thrust_components,
 }) => {
 	const tClock = useDerivedValue(() => round(clock.value, 2).toString());
+
+	const verticalThrust = useDerivedValue(() =>
+		(
+			front_thrust_components.value.vertical +
+			back_thrust_components.value.vertical
+		).toString()
+	);
+	const horizontalThrust = useDerivedValue(() =>
+		(
+			front_thrust_components.value.horizontal +
+			back_thrust_components.value.horizontal
+		).toString()
+	);
+
+	const fThrust = useDerivedValue(() =>
+		front_thrust_components.value.total.toString()
+	);
+	const bThrust = useDerivedValue(() =>
+		back_thrust_components.value.total.toString()
+	);
+	const totalThrust = useDerivedValue(() =>
+		(
+			back_thrust_components.value.total +
+			front_thrust_components.value.total
+		).toString()
+	);
+
 	const vAccel = useDerivedValue(() =>
 		vertical.value.acceleration.toString()
 	);
 	const vVelo = useDerivedValue(() => vertical.value.velocity.toString());
 	const vDist = useDerivedValue(() => vertical.value.distance.toString());
+	const vMaxDist = useDerivedValue(() =>
+		vertical.value.potMaxDistance.toString()
+	);
 
 	const hAccel = useDerivedValue(() =>
 		horizontal.value.acceleration.toString()
@@ -75,10 +119,43 @@ const DataPanel: React.FC<Props> = ({
 				</ClockBox>
 				<DimensionData>
 					<TitlesCol>
+						<Header>{"Total"}</Header>
+						<Text>{"Vertical"}</Text>
+						<Text>{"Horizontal"}</Text>
+						<Text>{"Total"}</Text>
+					</TitlesCol>
+					<View style={{ width: margin / 2 }} />
+					<DataCol>
+						<Header>{"-"}</Header>
+						<AnimatedText text={verticalThrust} />
+						<AnimatedText text={horizontalThrust} />
+						<AnimatedText text={totalThrust} />
+					</DataCol>
+				</DimensionData>
+				<View style={{ width: margin / 2 }} />
+				<DimensionData>
+					<TitlesCol>
+						<Header>{"Thrust"}</Header>
+						<Text>{"Front Thrust"}</Text>
+						<Text>{"Back Thrust"}</Text>
+						<Text>{"Total Thrust"}</Text>
+					</TitlesCol>
+					<View style={{ width: margin / 2 }} />
+					<DataCol>
+						<Header>{"-"}</Header>
+						<AnimatedText text={fThrust} />
+						<AnimatedText text={bThrust} />
+						<AnimatedText text={totalThrust} />
+					</DataCol>
+				</DimensionData>
+				<View style={{ width: margin / 2 }} />
+				<DimensionData>
+					<TitlesCol>
 						<Header>{"Vertical"}</Header>
 						<Text>{"Acceleration"}</Text>
 						<Text>{"Velocity"}</Text>
 						<Text>{"Distance"}</Text>
+						<Text>{"Max Distance"}</Text>
 					</TitlesCol>
 					<View style={{ width: margin / 2 }} />
 					<DataCol>
@@ -86,6 +163,7 @@ const DataPanel: React.FC<Props> = ({
 						<AnimatedText text={vAccel} />
 						<AnimatedText text={vVelo} />
 						<AnimatedText text={vDist} />
+						<AnimatedText text={vMaxDist} />
 					</DataCol>
 				</DimensionData>
 				<View style={{ width: margin / 2 }} />
@@ -132,8 +210,11 @@ const DataPanel: React.FC<Props> = ({
 				<FlightMode style={getBoxStyle("cruise")}>
 					<Text>Cruise</Text>
 				</FlightMode>
-				<FlightMode style={getBoxStyle("tilt_to_land")}>
-					<Text>Tilt to Land</Text>
+				<FlightMode style={getBoxStyle("tilt_to_land_1")}>
+					<Text>Tilt to Land I</Text>
+				</FlightMode>
+				<FlightMode style={getBoxStyle("tilt_to_land_2")}>
+					<Text>Tilt to Land II</Text>
 				</FlightMode>
 				<FlightMode style={getBoxStyle("landing")}>
 					<Text>Landing</Text>

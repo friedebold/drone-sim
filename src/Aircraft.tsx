@@ -7,6 +7,7 @@ import { LAT_DISTANCE, LON_DISTANCE } from "./constants";
 
 interface Props {
 	// flight_data: Animated.SharedValue<FlightData>;
+	grid_move: boolean;
 	vertical: Animated.SharedValue<{
 		acceleration: number;
 		velocity: number;
@@ -29,6 +30,7 @@ interface Props {
 }
 
 const Aircraft: React.FC<Props> = ({
+	grid_move,
 	vertical,
 	horizontal,
 	pitch,
@@ -40,14 +42,16 @@ const Aircraft: React.FC<Props> = ({
 
 	const animatedBackground = useAnimatedStyle(() => {
 		return {
-			top:
-				height / 2 -
-				aircraft_width / 2 -
-				(vertical.value.distance / 10) * LON_DISTANCE,
-			left:
-				width / 2 -
-				aircraft_width / 2 +
-				(horizontal.value.distance / 10) * LAT_DISTANCE,
+			top: grid_move
+				? height / 2 - aircraft_width / 2
+				: height / 2 -
+				  aircraft_width / 2 -
+				  (vertical.value.distance / 10) * LON_DISTANCE,
+			left: grid_move
+				? width / 2 - aircraft_width / 2
+				: width / 2 -
+				  aircraft_width / 2 +
+				  (horizontal.value.distance / 10) * LAT_DISTANCE,
 			transform: [{ rotate: pitch.value.degree + "deg" }],
 		};
 	});
@@ -55,9 +59,15 @@ const Aircraft: React.FC<Props> = ({
 	const animatedVectorBox = useAnimatedStyle(() => {
 		return {
 			transform: [{ rotate: -pitch.value.degree + "deg" }],
-			height: back_thrust_components.value.vertical * 2 * thrustScaler,
-			width: back_thrust_components.value.horizontal * 2 * thrustScaler,
-			left: -back_thrust_components.value.horizontal * thrustScaler, //-back_thrust.value * thrustScaler,
+			height: Math.abs(
+				back_thrust_components.value.vertical * 2 * thrustScaler
+			),
+			width: Math.abs(
+				back_thrust_components.value.horizontal * 2 * thrustScaler
+			),
+			left: -Math.abs(
+				back_thrust_components.value.horizontal * thrustScaler
+			), //-back_thrust.value * thrustScaler,
 			top:
 				aircraft_width / 2 -
 				back_thrust_components.value.vertical * thrustScaler, //aircraft_width / 2 - back_thrust.value * thrustScaler,
@@ -67,11 +77,17 @@ const Aircraft: React.FC<Props> = ({
 	const animatedFrontVectorBox = useAnimatedStyle(() => {
 		return {
 			transform: [{ rotate: -pitch.value.degree + "deg" }],
-			height: front_thrust_components.value.vertical * 2 * thrustScaler,
-			width: front_thrust_components.value.horizontal * 2 * thrustScaler,
+			height: Math.abs(
+				front_thrust_components.value.vertical * 2 * thrustScaler
+			),
+			width: Math.abs(
+				front_thrust_components.value.horizontal * 2 * thrustScaler
+			),
 			left:
 				aircraft_width -
-				front_thrust_components.value.horizontal * thrustScaler, //-back_thrust.value * thrustScaler,
+				Math.abs(
+					front_thrust_components.value.horizontal * thrustScaler
+				),
 			top:
 				aircraft_width / 2 -
 				front_thrust_components.value.vertical * thrustScaler,
@@ -88,16 +104,26 @@ const Aircraft: React.FC<Props> = ({
 			return {
 				height:
 					direction == "vertical"
-						? thrust_component.value.vertical * thrustScaler
+						? Math.abs(
+								thrust_component.value.vertical * thrustScaler
+						  )
 						: 1,
 				width:
 					direction == "vertical"
 						? 1
-						: thrust_component.value.horizontal * thrustScaler,
-				top: thrust_component.value.vertical * thrustScaler,
+						: Math.abs(
+								thrust_component.value.horizontal * thrustScaler
+						  ),
+				top: Math.abs(thrust_component.value.vertical * thrustScaler),
 				left:
 					direction == "vertical"
-						? thrust_component.value.horizontal * thrustScaler
+						? Math.abs(
+								thrust_component.value.horizontal * thrustScaler
+						  )
+						: thrust_component.value.horizontal < 0
+						? Math.abs(
+								thrust_component.value.horizontal * thrustScaler
+						  )
 						: 0,
 			};
 		});
@@ -191,7 +217,7 @@ const AircraftComp = styled(Animated.View)`
 
 const ForceBox = styled(Animated.View)`
 	position: absolute;
-	//	background-color: #ff000021;
+	/* background-color: #ff000021; */
 `;
 
 const ForceVector = styled(Animated.View)`

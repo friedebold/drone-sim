@@ -30,7 +30,10 @@ interface Props {
 
 const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 	const { width } = useWindowDimensions();
+	const grid_move = false;
+
 	const mode = useSharedValue("");
+
 	const front_thrust_components = useSharedValue({
 		total: 0,
 		vertical: 0,
@@ -45,6 +48,7 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 		acceleration: 0,
 		velocity: 0,
 		distance: 0,
+		potMaxDistance: 0,
 	});
 	const horizontal = useSharedValue({
 		acceleration: 0,
@@ -176,8 +180,13 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 						},
 					]}
 				>
-					<Grid />
+					<Grid
+						{...{ grid_move }}
+						{...{ vertical }}
+						{...{ horizontal }}
+					/>
 					<Aircraft
+						{...{ grid_move }}
 						{...{ vertical }}
 						{...{ horizontal }}
 						{...{ pitch }}
@@ -195,6 +204,8 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 							{...{ vertical }}
 							{...{ horizontal }}
 							{...{ mode }}
+							{...{ back_thrust_components }}
+							{...{ front_thrust_components }}
 						/>
 						<Animated.View
 							style={[

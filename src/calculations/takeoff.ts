@@ -1,9 +1,8 @@
 import { FlightOptions } from "../../App";
-import { MAX_THRUST_PER_SIDE } from "../constants";
+import { hover_thrust, MAX_THRUST_PER_SIDE } from "../constants";
 import { round } from "./common";
 
 export const runTakeoff = (
-	engines_running: boolean,
 	options: FlightOptions,
 	vAcceleration: number,
 	vVelocity: number,
@@ -11,22 +10,23 @@ export const runTakeoff = (
 	back_thrust: number,
 	front_thrust: number,
 	logger: string,
-	mode: string
+	mode: string,
+	vMaxDistance: number
 ) => {
 	"worklet";
-	if (engines_running) {
-		const potAcceleration = -9.81;
-		let potVelocity = vVelocity;
-		let potAltitude = vDistance;
-		for (let j = 0; j <= 2000; j++) {
-			potVelocity = potVelocity + potAcceleration / 100;
-			potAltitude = potAltitude + potVelocity / 100;
-			if (potAltitude >= options.targetAltitude) {
-				engines_running = false;
-				break;
-			}
-		}
+
+	// CALCULATE ALTITUDE ON CUTTOFF
+	const potAcceleration = -9.81;
+	let potVelocity = vVelocity;
+	let potAltitude = vDistance;
+	let max_altitude = -100000000;
+	for (let i = 0; i <= 2000; i++) {
+		potVelocity = potVelocity + potAcceleration / 100;
+		potAltitude = potAltitude + potVelocity / 100;
+		if (potAltitude > max_altitude) max_altitude = round(potAltitude);
 	}
+	vMaxDistance = max_altitude;
+	logger = vMaxDistance + "";
 
 	// Switch to Cruise
 	if (
@@ -41,31 +41,30 @@ export const runTakeoff = (
 	if (vVelocity < 0 && vAcceleration == 0) {
 		const correction_thrust = round((-vVelocity / 2) * 100 + 9.81 / 2);
 
-		front_thrust = correction_thrust;
-		back_thrust = correction_thrust;
+		front_thrust = Math.min(correction_thrust, MAX_THRUST_PER_SIDE);
+		back_thrust = Math.min(correction_thrust, MAX_THRUST_PER_SIDE);
 		console.log("speed correct", correction_thrust);
 	}
 
-	// Hover
-	else if (vDistance >= options.targetAltitude * 0.5 && vVelocity <= 0) {
-		front_thrust = 9.81 / 2;
-		back_thrust = 9.81 / 2;
-	}
-
-	// Free Fall
-	else if (!engines_running) {
-		front_thrust = 0;
-		back_thrust = 0;
-	}
-
-	//  Max Thrust
-	else {
+	//  Thrust
+	else if (vMaxDistance <= options.targetAltitude * 0.8) {
 		front_thrust = MAX_THRUST_PER_SIDE;
 		back_thrust = MAX_THRUST_PER_SIDE;
 	}
 
+	// Hover
+	else if (vMaxDistance <= options.targetAltitude) {
+		front_thrust = hover_thrust;
+		back_thrust = hover_thrust;
+	}
+
+	// Free Fall
+	else {
+		front_thrust = 0;
+		back_thrust = 0;
+	}
+
 	return {
-		engines_running,
 		front_thrust,
 		back_thrust,
 		logger,
@@ -73,5 +72,6 @@ export const runTakeoff = (
 		vAcceleration,
 		vVelocity,
 		vDistance,
+		vMaxDistance,
 	};
 };

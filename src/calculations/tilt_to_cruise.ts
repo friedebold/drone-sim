@@ -1,29 +1,16 @@
 import { FlightOptions } from "../../App";
-import {
-	hover_thrust,
-	MAX_THRUST_PER_SIDE,
-	thrust_differential
-} from "../constants";
-import { round } from "./common";
-
-export const adjust_for_horizontal = (
-	thrust_total: number,
-	pitch_angle: number
-) => {
-	return Math.min(
-		thrust_total / Math.cos((pitch_angle * Math.PI) / 180),
-		MAX_THRUST_PER_SIDE
-	);
-};
+import { hover_thrust, thrust_differential } from "../constants";
+import { adjust_for_horizontal, round } from "./common";
 
 export const runTiltToCruise = (
 	options: FlightOptions,
 	tilting: boolean,
-	vVelocity: number,
 	vAcceleration: number,
+	vVelocity: number,
 	pitch_angle: number,
-	pitchVelocity: number,
 	pitchAcceleration: number,
+	pitchVelocity: number,
+	pitchDistance: number,
 	mode: string,
 	front_thrust: number,
 	back_thrust: number,
@@ -31,9 +18,39 @@ export const runTiltToCruise = (
 ) => {
 	//TILT CUTTOFF
 	if (tilting) {
-		if (pitch_angle >= options.maxPitch / 2) {
-			tilting = false;
+		const potPitchAcceleration = adjust_for_horizontal(
+			-thrust_differential * 2,
+			pitch_angle
+		);
+		logger = potPitchAcceleration + "";
+		let potPitchVelocity = pitchVelocity;
+		let potPitchDistance = pitchDistance;
+		for (let j = 0; j <= 2000; j++) {
+			potPitchVelocity = potPitchVelocity + potPitchAcceleration / 100;
+			potPitchDistance = potPitchDistance + potPitchVelocity / 100;
+			const potPitchAngle = round((potPitchDistance * 180) / Math.PI);
+			if (potPitchAngle >= options.maxPitch) {
+				tilting = false;
+			}
 		}
+
+		/* if (pitch_angle >= options.maxPitch / 2) {
+		
+		} */
+
+		/* 
+		const potAcceleration = -9.81;
+		let potVelocity = vVelocity;
+		let potAltitude = vDistance;
+		for (let j = 0; j <= 2000; j++) {
+			potVelocity = potVelocity + potAcceleration / 100;
+			potAltitude = potAltitude + potVelocity / 100;
+			if (potAltitude >= options.targetAltitude) {
+				engines_running = false;
+				break;
+			}
+		} 
+		*/
 	}
 
 	//SWITCH TO CRUISE
@@ -106,11 +123,16 @@ export const runTiltToCruise = (
 	}
 
 	return {
-		logger,
 		tilting,
-		mode,
-		back_thrust,
-		front_thrust,
+		vAcceleration,
 		vVelocity,
+		pitch_angle,
+		pitchAcceleration,
+		pitchVelocity,
+		pitchDistance,
+		mode,
+		front_thrust,
+		back_thrust,
+		logger,
 	};
 };

@@ -1,30 +1,15 @@
 import { FlightOptions } from "../../App";
-import {
-	hover_thrust,
-	MAX_THRUST_PER_SIDE,
-	thrust_differential
-} from "../constants";
-import { round } from "./common";
+import { hover_thrust, thrust_differential } from "../constants";
+import { adjust_for_horizontal, round } from "./common";
 
-export const adjust_for_horizontal = (
-	thrust_total: number,
-	pitch_angle: number
-) => {
-	return Math.min(
-		thrust_total / Math.cos((pitch_angle * Math.PI) / 180),
-		MAX_THRUST_PER_SIDE
-	);
-};
-
-export const runTiltToLand = (
+export const runTiltToLand_1 = (
 	options: FlightOptions,
 	tilting: boolean,
 	mode: string,
 	pitch_angle: number,
-	/*vVelocity: number,
-	vAcceleration: number, */
 	pitchAcceleration: number,
 	pitchVelocity: number,
+	pitchDistance: number,
 	front_thrust: number,
 	back_thrust: number,
 	logger: string
@@ -38,23 +23,15 @@ export const runTiltToLand = (
 			tilting = false;
 		}
 	}
-	/*
-	//SWITCH TO CRUISE
-	if (
-		pitch_angle > options.maxPitch * 0.5 &&
-		pitchVelocity == 0 &&
-		pitchAcceleration == 0
-	) {
-		logger = "speed correct: " + vVelocity;
-		mode = "cruise";
-	}
-/*  */
+
+	//SWITCH TO TILT TO LAND 2
 	if (
 		pitch_angle < cutoff_point &&
 		pitchVelocity == 0 &&
 		pitchAcceleration == 0
 	) {
-		mode = "landing";
+		mode = "tilt_to_land_2";
+		tilting = true;
 	}
 
 	// Pitch Speed Correction
@@ -120,6 +97,7 @@ export const runTiltToLand = (
 		mode,
 		pitchAcceleration,
 		pitchVelocity,
+		pitchDistance,
 		back_thrust,
 		front_thrust,
 	};

@@ -13,6 +13,7 @@ export interface FlightData {
 		acceleration: number;
 		velocity: number;
 		distance: number;
+		potMaxDistance: number;
 	};
 	horizontal: {
 		acceleration: number;
