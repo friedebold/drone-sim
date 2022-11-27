@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import styled from "styled-components/native";
-import { FlightOptions } from "../App";
-import { margin } from "./constants";
+import { FlightOptions } from "../../App";
+import { margin } from "../constants";
 
 interface Props {
 	setOptions: React.Dispatch<React.SetStateAction<FlightOptions>>;
@@ -38,8 +38,8 @@ const FlightOptionInputs: React.FC<Props> = ({ setOptions }) => {
 					}
 				}}
 			/>
-			<View style={{ height: margin / 2 }} />
-			<Text>{"Distance (m):"}</Text>
+			{/* 	<View style={{ height: margin / 2 }} /> */}
+			{/* 		<Text>{"Distance (m):"}</Text>
 			<Input
 				value={targetDistance.toString()}
 				onChangeText={(e: string) => {
@@ -48,8 +48,8 @@ const FlightOptionInputs: React.FC<Props> = ({ setOptions }) => {
 						setTargetDistance(number);
 					}
 				}}
-			/>
-			<View style={{ height: margin / 2 }} />
+			/> */}
+			{/* 	<View style={{ height: margin / 2 }} />
 			<Text>{"Tilt Angle:"}</Text>
 			<Input
 				value={maxPitch.toString()}
@@ -60,8 +60,8 @@ const FlightOptionInputs: React.FC<Props> = ({ setOptions }) => {
 					}
 				}}
 			/>
-			<View style={{ height: margin / 2 }} />
-			<View style={{ flexDirection: "row" }}>
+			<View style={{ height: margin / 2 }} /> */}
+			{/* <View style={{ flexDirection: "row" }}>
 				<TouchableOpacity onPress={() => setAircraftType("quad")}>
 					<Toggle
 						style={{
@@ -86,9 +86,9 @@ const FlightOptionInputs: React.FC<Props> = ({ setOptions }) => {
 						<Text>Tail Sitter</Text>
 					</Toggle>
 				</TouchableOpacity>
-			</View>
+			</View> */}
 
-			<View style={{ height: margin / 2 }} />
+			{/* 	<View style={{ height: margin / 2 }} />
 			<View style={{ flexDirection: "row" }}>
 				<TouchableOpacity
 					onPress={() => {
@@ -106,7 +106,7 @@ const FlightOptionInputs: React.FC<Props> = ({ setOptions }) => {
 					</Toggle>
 				</TouchableOpacity>
 				<View style={{ height: margin / 2 }} />
-			</View>
+			</View> */}
 			<View style={{ height: margin / 2 }} />
 			<TouchableOpacity
 				style={{

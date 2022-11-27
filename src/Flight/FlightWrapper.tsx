@@ -1,10 +1,5 @@
 import React from "react";
-import {
-	Text,
-	TouchableWithoutFeedback,
-	useWindowDimensions,
-	View
-} from "react-native";
+import { TouchableWithoutFeedback, useWindowDimensions } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
 	cancelAnimation,
@@ -15,12 +10,28 @@ import Animated, {
 	withDecay
 } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { FlightData, FlightOptions } from "../App";
-import Aircraft from "./Aircraft";
-import { margin } from "./constants";
-import DataPanel from "./DataPanel";
-import Grid from "./Grid";
-import { useClock } from "./hooks/useClock";
+import { FlightData, FlightOptions } from "../../App";
+import { useClock } from "../hooks/useClock";
+import Flight from "./Flight";
+
+export interface ThrustProps {
+	total: number;
+	vertical: number;
+	horizontal: number;
+}
+
+export interface DimensionData {
+	acceleration: number;
+	velocity: number;
+	distance: number;
+}
+
+export interface PitchProps {
+	acceleration: number;
+	velocity: number;
+	distance: number;
+	angle: number;
+}
 
 interface Props {
 	options: FlightOptions;
@@ -28,39 +39,42 @@ interface Props {
 	setNavigation: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
+const FlightWrapper: React.FC<Props> = ({ setNavigation, options, data }) => {
 	const { width } = useWindowDimensions();
-	const grid_move = false;
+	/* const grid_move = false; */
 
 	const mode = useSharedValue("");
 
-	const front_thrust_components = useSharedValue({
+	const front_thrust_components = useSharedValue<ThrustProps>({
 		total: 0,
 		vertical: 0,
 		horizontal: 0,
 	});
-	const back_thrust_components = useSharedValue({
+	const back_thrust_components = useSharedValue<ThrustProps>({
 		total: 0,
 		vertical: 0,
 		horizontal: 0,
 	});
-	const vertical = useSharedValue({
-		acceleration: 0,
-		velocity: 0,
-		distance: 0,
-		potMaxDistance: 0,
-	});
-	const horizontal = useSharedValue({
+	const vertical = useSharedValue<DimensionData>({
 		acceleration: 0,
 		velocity: 0,
 		distance: 0,
 	});
-	const pitch = useSharedValue({
+	const horizontal = useSharedValue<DimensionData>({
 		acceleration: 0,
 		velocity: 0,
 		distance: 0,
-		degree: 0,
-		rad: 0,
+	});
+	const pitch = useSharedValue<PitchProps>({
+		acceleration: 0,
+		velocity: 0,
+		distance: 0,
+		angle: 0,
+	});
+
+	const prediction = useSharedValue({
+		altitude: 0,
+		distance: 0,
 	});
 
 	const clock_running = useSharedValue(true);
@@ -81,6 +95,7 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 				vertical.value = data[rounded_clock].vertical;
 				horizontal.value = data[rounded_clock].horizontal;
 				pitch.value = data[rounded_clock].pitch;
+				prediction.value = data[rounded_clock].prediction;
 
 				console.log(rounded_clock / 100, data[rounded_clock].logger);
 
@@ -105,14 +120,32 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 		}
 	);
 
-	const clockBarStyle = useAnimatedStyle(() => {
-		return {
-			width: (clock.value / 20) * width,
-		};
-	});
-
 	const start_clock = useSharedValue(0);
 	const active = useSharedValue(false);
+	/* const panGesture = Gesture.Pan()
+		.onBegin((e) => {
+			start_clock.value = clock.value;
+			if (clock_running.value) {
+				clock_running.value = false;
+				cancelAnimation(clock);
+			}
+		})
+		.onChange((e) => {
+			active.value = true;
+			let drag_clock = start_clock.value + e.translationX * (20 / width);
+			let clamped_drag_clock = Math.max(0, Math.min(drag_clock, 2000));
+			clock.value = clamped_drag_clock;
+		})
+		.onFinalize(() => {
+			active.value = false;
+		})
+		.onEnd((e) => {
+			clock.value = withDecay({
+				velocity: e.velocityX / 80,
+				clamp: [0, 20],
+			});
+		}); */
+
 	const panGesture = Gesture.Pan()
 		.onBegin((e) => {
 			start_clock.value = clock.value;
@@ -128,19 +161,7 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 			clock.value = clamped_drag_clock;
 		})
 		.onFinalize(() => {
-			/* if (!active.value) {
-				if (clock_running.value) {
-					console.log("stop clock!!");
-					clock_running.value = false;
-					cancelAnimation(clock);
-				} else {
-					console.log("start clock!!");
-					clock_running.value = true;
-				}
-			} */
-			/* clock_running.value = true; */
 			active.value = false;
-			//	clock_running.value = false;
 		})
 		.onEnd((e) => {
 			clock.value = withDecay({
@@ -148,13 +169,6 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 				clamp: [0, 20], // optionally define boundaries for the animation
 			});
 		});
-
-	const animatedBackgroundStyle = useAnimatedStyle(() => {
-		console.log(clock_running.value);
-		return {
-			backgroundColor: clock_running.value ? "white" : "#e2e2e5",
-		};
-	});
 
 	const toggle_clock_running = () => {
 		"worklet";
@@ -164,75 +178,44 @@ const Flight: React.FC<Props> = ({ setNavigation, options, data }) => {
 		} else clock_running.value = !clock_running.value;
 	};
 
+	const animatedBackgroundStyle = useAnimatedStyle(() => {
+		return {
+			//	backgroundColor: clock_running.value == true ? "white" : "#e2e2e5",
+		};
+	}, [clock_running]);
+
 	return (
 		<GestureDetector gesture={panGesture}>
 			<TouchableWithoutFeedback
 				onPress={() => {
 					runOnJS(toggle_clock_running)();
+					console.log("click...");
+				}}
+				style={{
+					backgroundColor: "red",
 				}}
 			>
-				<Animated.View
-					style={[
-						animatedBackgroundStyle,
-						{
-							justifyContent: "space-between",
-							flex: 1,
-						},
-					]}
-				>
-					<Grid
-						{...{ grid_move }}
+				<Background style={animatedBackgroundStyle}>
+					<Flight
+						{...{ setNavigation }}
+						{...{ clock_running }}
+						{...{ clock }}
 						{...{ vertical }}
 						{...{ horizontal }}
-					/>
-					<Aircraft
-						{...{ grid_move }}
-						{...{ vertical }}
-						{...{ horizontal }}
-						{...{ pitch }}
-						{...{ back_thrust_components }}
 						{...{ front_thrust_components }}
+						{...{ back_thrust_components }}
+						{...{ pitch }}
+						{...{ mode }}
 					/>
-
-					<BackButton onPress={() => setNavigation("input")}>
-						<Text>x</Text>
-					</BackButton>
-					<View>
-						<DataPanel
-							{...{ clock }}
-							{...{ pitch }}
-							{...{ vertical }}
-							{...{ horizontal }}
-							{...{ mode }}
-							{...{ back_thrust_components }}
-							{...{ front_thrust_components }}
-						/>
-						<Animated.View
-							style={[
-								clockBarStyle,
-								{
-									height: 2,
-									backgroundColor: "black",
-								},
-							]}
-						></Animated.View>
-					</View>
-				</Animated.View>
+				</Background>
 			</TouchableWithoutFeedback>
 		</GestureDetector>
 	);
 };
 
-const BackButton = styled.TouchableOpacity`
-	height: 50px;
-	width: 50px;
-	top: ${margin / 2}px;
-	left: ${margin / 2}px;
-	justify-content: center;
-	align-items: center;
-	background-color: white;
-	border-width: 1px;
-	border-color: black;
+const Background = styled(Animated.View)`
+	justify-content: space-between;
+	flex: 1;
 `;
 
-export default Flight;
+export default FlightWrapper;

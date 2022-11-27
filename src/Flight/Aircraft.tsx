@@ -2,35 +2,22 @@ import React from "react";
 import { useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { ThrustComponents } from "../App";
-import { LAT_DISTANCE, LON_DISTANCE } from "./constants";
+import { ThrustComponents } from "../../App";
+import { LAT_DISTANCE, LON_DISTANCE } from "../constants";
+import { DimensionData, PitchProps } from "./FlightWrapper";
 
 interface Props {
 	// flight_data: Animated.SharedValue<FlightData>;
-	grid_move: boolean;
-	vertical: Animated.SharedValue<{
-		acceleration: number;
-		velocity: number;
-		distance: number;
-	}>;
-	horizontal: Animated.SharedValue<{
-		acceleration: number;
-		velocity: number;
-		distance: number;
-	}>;
-	pitch: Animated.SharedValue<{
-		acceleration: number;
-		velocity: number;
-		distance: number;
-		degree: number;
-		rad: number;
-	}>;
+	/* 	grid_move: boolean; */
+	vertical: Animated.SharedValue<DimensionData>;
+	horizontal: Animated.SharedValue<DimensionData>;
+	pitch: Animated.SharedValue<PitchProps>;
 	back_thrust_components: Animated.SharedValue<ThrustComponents>;
 	front_thrust_components: Animated.SharedValue<ThrustComponents>;
 }
 
 const Aircraft: React.FC<Props> = ({
-	grid_move,
+	/* 	grid_move, */
 	vertical,
 	horizontal,
 	pitch,
@@ -42,23 +29,25 @@ const Aircraft: React.FC<Props> = ({
 
 	const animatedBackground = useAnimatedStyle(() => {
 		return {
-			top: grid_move
+			top:
+				/*  grid_move
 				? height / 2 - aircraft_width / 2
-				: height / 2 -
-				  aircraft_width / 2 -
-				  (vertical.value.distance / 10) * LON_DISTANCE,
-			left: grid_move
+				: */ height / 2 -
+				aircraft_width / 2 -
+				(vertical.value.distance / 10) * LON_DISTANCE,
+			left:
+				/* grid_move
 				? width / 2 - aircraft_width / 2
-				: width / 2 -
-				  aircraft_width / 2 +
-				  (horizontal.value.distance / 10) * LAT_DISTANCE,
-			transform: [{ rotate: pitch.value.degree + "deg" }],
+				: */ width / 2 -
+				aircraft_width / 2 +
+				(horizontal.value.distance / 10) * LAT_DISTANCE,
+			transform: [{ rotate: pitch.value.angle + "deg" }],
 		};
 	});
 
 	const animatedVectorBox = useAnimatedStyle(() => {
 		return {
-			transform: [{ rotate: -pitch.value.degree + "deg" }],
+			transform: [{ rotate: -pitch.value.angle + "deg" }],
 			height: Math.abs(
 				back_thrust_components.value.vertical * 2 * thrustScaler
 			),
@@ -76,7 +65,7 @@ const Aircraft: React.FC<Props> = ({
 
 	const animatedFrontVectorBox = useAnimatedStyle(() => {
 		return {
-			transform: [{ rotate: -pitch.value.degree + "deg" }],
+			transform: [{ rotate: -pitch.value.angle + "deg" }],
 			height: Math.abs(
 				front_thrust_components.value.vertical * 2 * thrustScaler
 			),
@@ -217,7 +206,6 @@ const AircraftComp = styled(Animated.View)`
 
 const ForceBox = styled(Animated.View)`
 	position: absolute;
-	/* background-color: #ff000021; */
 `;
 
 const ForceVector = styled(Animated.View)`

@@ -2,23 +2,16 @@ import React from "react";
 import { useWindowDimensions } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import styled from "styled-components/native";
-import { LAT_DISTANCE, LON_DISTANCE } from "./constants";
+import { LAT_DISTANCE, LON_DISTANCE } from "../constants";
+import { DimensionData } from "./FlightWrapper";
 
 interface Props {
-	grid_move: boolean;
-	vertical: Animated.SharedValue<{
-		acceleration: number;
-		velocity: number;
-		distance: number;
-	}>;
-	horizontal: Animated.SharedValue<{
-		acceleration: number;
-		velocity: number;
-		distance: number;
-	}>;
+	/* 	grid_move: boolean; */
+	vertical: Animated.SharedValue<DimensionData>;
+	horizontal: Animated.SharedValue<DimensionData>;
 }
 
-const Grid: React.FC<Props> = ({ grid_move, vertical, horizontal }) => {
+const Grid: React.FC<Props> = ({ /* grid_move, */ vertical, horizontal }) => {
 	const { height, width } = useWindowDimensions();
 
 	const getLatitudeStyle = (e: number) => {
@@ -78,23 +71,24 @@ const Grid: React.FC<Props> = ({ grid_move, vertical, horizontal }) => {
 
 	const animatedLatitudeStyle = useAnimatedStyle(() => {
 		return {
-			top: grid_move ? (vertical.value.distance / 10) * LON_DISTANCE : 0,
+			top: /*  grid_move ? (vertical.value.distance / 10) * LON_DISTANCE :  */ 0,
 		};
 	});
 
 	const animatedLongitudeStyle = useAnimatedStyle(() => {
 		return {
-			left: grid_move
+			left: /*  grid_move
 				? -(horizontal.value.distance / 10) * LAT_DISTANCE
-				: 0,
+				: */ 0,
 		};
 	});
 
 	const animatedLongitudeTextStyle = useAnimatedStyle(() => {
 		return {
-			left: grid_move
+			left:
+				/* grid_move
 				? width / 2 - (horizontal.value.distance / 10) * LAT_DISTANCE
-				: width / 2,
+				: */ width / 2,
 		};
 	});
 

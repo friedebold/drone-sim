@@ -1,10 +1,12 @@
 import { FlightData, FlightOptions } from "../../App";
-import { round } from "./common";
+import { DimensionData, PitchProps } from "../Flight/FlightWrapper";
+import { adjust_for_horizontal, round } from "./common";
 import { runLanding } from "./landing";
+import { reverse_cruise } from "./reverse_cruise";
+import { spin } from "./spin";
 import { runTakeoff } from "./takeoff";
 import { runTiltToCruise } from "./tilt_to_cruise";
-import { runTiltToLand_1 } from "./tilt_to_land_1";
-import { runTiltToLand_2 } from "./tilt_to_land_2";
+import { tilt_to_land } from "./tilt_to_land";
 
 export const calculateFlight = (options: FlightOptions) => {
 	const flightData: FlightData[] = [];
@@ -14,20 +16,32 @@ export const calculateFlight = (options: FlightOptions) => {
 
 	let mode = "takeoff";
 
-	let potMaxDistance = 0;
-	let vAcceleration = 0;
-	let vVelocity = 0;
-	let vDistance = 0;
-	let hAcceleration = 0;
-	let hVelocity = 0;
-	let hDistance = 0;
-	let front_thrust = 0;
-	let back_thrust = 0;
+	let thrust = {
+		front: 0,
+		back: 0,
+	};
 
-	let pitchAcceleration = 0;
-	let pitchVelocity = 0;
-	let pitchDistance = 0;
-	let pitch_angle = 0;
+	let vertical: DimensionData = {
+		acceleration: 0,
+		velocity: 0,
+		distance: 0,
+	};
+
+	let horizontal: DimensionData = {
+		acceleration: 0,
+		velocity: 0,
+		distance: 0,
+	};
+
+	let pitch: PitchProps = {
+		acceleration: 0,
+		velocity: 0,
+		distance: 0,
+		angle: 0,
+	};
+
+	let defaultAltitude = 0;
+	let defaultDistance = 0;
 
 	let logger = "";
 
@@ -37,193 +51,186 @@ export const calculateFlight = (options: FlightOptions) => {
 		if (mode == "takeoff") {
 			const results = runTakeoff(
 				options,
-				vAcceleration,
-				vVelocity,
-				vDistance,
-				back_thrust,
-				front_thrust,
+				vertical,
+				thrust,
 				logger,
 				mode,
-				potMaxDistance
+				defaultAltitude
 			);
-			vAcceleration = results.vAcceleration;
-			vVelocity = results.vVelocity;
-			vDistance = results.vDistance;
-			back_thrust = results.back_thrust;
-
-			front_thrust = results.front_thrust;
+			vertical = results.vertical;
+			thrust = results.thrust;
 			logger = results.logger;
 			mode = results.mode;
-			potMaxDistance = results.vMaxDistance;
+			defaultAltitude = results.defaultAltitude;
 		}
-
-		//CRUISE4
 		if (mode == "tilt_to_cruise") {
 			const results = runTiltToCruise(
 				options,
 				tilting,
-				vAcceleration,
-				vVelocity,
-				pitch_angle,
-				pitchAcceleration,
-				pitchVelocity,
-				pitchDistance,
+				pitch,
+				vertical,
 				mode,
-				front_thrust,
-				back_thrust,
+				thrust,
 				logger
 			);
 			tilting = results.tilting;
-			vAcceleration = results.vAcceleration;
-			vVelocity = results.vVelocity;
-			pitch_angle = results.pitch_angle;
-			pitchAcceleration = results.pitchAcceleration;
-			pitchVelocity = results.pitchVelocity;
-			pitchDistance = results.pitchDistance;
+			vertical = results.vertical;
+			pitch = results.pitch;
 			mode = results.mode;
-			front_thrust = results.front_thrust;
-			back_thrust = results.back_thrust;
+			thrust = results.thrust;
 			logger = results.logger;
 		}
 		if (mode == "cruise") {
-			if (hDistance >= 30) {
-				mode = "tilt_to_land_1";
+			const correction_thrust = round(
+				(-vertical.velocity / 2) * 100 + 9.81 / 2
+			);
+
+			thrust.front = adjust_for_horizontal(
+				correction_thrust,
+				pitch.angle
+			);
+			thrust.back = adjust_for_horizontal(correction_thrust, pitch.angle);
+			if (horizontal.distance >= 20) {
+				mode = "spin";
 			}
 			// Reverse Thrust
 		}
-		if (mode == "tilt_to_land_1") {
-			const results = runTiltToLand_1(
-				options,
-				tilting,
+		if (mode == "spin") {
+			const results = spin(tilting, mode, pitch, thrust, logger);
+			logger = results.logger;
+			tilting = results.tilting;
+			pitch = results.pitch;
+			mode = results.mode;
+			thrust = results.thrust;
+		}
+		if (mode == "reverse_cruise") {
+			const results = reverse_cruise(
+				thrust,
+				vertical,
+				horizontal,
+				pitch,
 				mode,
-				pitch_angle,
-				pitchAcceleration,
-				pitchVelocity,
-				pitchDistance,
-				front_thrust,
-				back_thrust,
 				logger
 			);
-			logger = results.logger;
-			tilting = results.tilting;
-			pitchVelocity = results.pitchVelocity;
-			pitchAcceleration = results.pitchAcceleration;
-			pitchDistance = results.pitchDistance;
+			thrust = results.thrust;
+			vertical = results.vertical;
+			horizontal = results.horizontal;
+			pitch = results.pitch;
 			mode = results.mode;
-			back_thrust = results.back_thrust;
-			front_thrust = results.front_thrust;
+			logger = results.logger;
 		}
-		if (mode == "tilt_to_land_2") {
-			const results = runTiltToLand_2(
+		if (mode == "tilt_to_land") {
+			const results = tilt_to_land(
 				options,
 				tilting,
 				mode,
-				pitch_angle,
-				pitchAcceleration,
-				pitchVelocity,
-				pitchDistance,
-				front_thrust,
-				back_thrust,
+				pitch,
 				logger,
-				hVelocity
+				thrust,
+				horizontal
 			);
 			tilting = results.tilting;
 			mode = results.mode;
-			pitch_angle = results.pitch_angle;
-			pitchAcceleration = results.pitchAcceleration;
-			pitchVelocity = results.pitchVelocity;
-			pitchDistance = results.pitchDistance;
-			back_thrust = results.back_thrust;
-			front_thrust = results.front_thrust;
+			pitch = results.pitch;
+			thrust = results.thrust;
 			logger = results.logger;
-			hVelocity = results.hVelocity;
+			horizontal = results.horizontal;
 		}
 
 		if (mode == "landing") {
 			const results = runLanding(
 				engines_running,
-				vAcceleration,
-				vVelocity,
-				vDistance,
-				front_thrust,
-				back_thrust,
-				pitch_angle,
+				vertical,
+				thrust,
+				pitch,
 				logger
 			);
 			engines_running = results.engines_running;
-			vAcceleration = results.vAcceleration;
-			vVelocity = results.vVelocity;
-			vDistance = results.vDistance;
-			front_thrust = results.front_thrust;
-			back_thrust = results.back_thrust;
-			pitch_angle = results.pitch_angle;
+			vertical = results.vertical;
+			thrust = results.thrust;
+			pitch = results.pitch;
 			logger = results.logger;
 		}
 
 		// Pitch Angle
-		pitchAcceleration = round(back_thrust - front_thrust);
-		pitchVelocity = round(pitchVelocity + round(pitchAcceleration / 100));
-		pitchDistance = round(pitchDistance + round(pitchVelocity / 100));
-		pitch_angle = round((pitchDistance * 180) / Math.PI);
+		pitch.acceleration = round(thrust.back - thrust.front);
+		pitch.velocity = round(
+			pitch.velocity + round(pitch.acceleration / 100)
+		);
+		pitch.distance = round(pitch.distance + round(pitch.velocity / 100));
+		pitch.angle = round((pitch.distance * 180) / Math.PI);
 
 		// Thrust Components
 		const front_vertical = round(
-			Math.cos((pitch_angle * Math.PI) / 180) * front_thrust
+			Math.cos((pitch.angle * Math.PI) / 180) * thrust.front
 		);
 		const front_horizontal = round(
-			Math.sin((pitch_angle * Math.PI) / 180) * front_thrust
+			Math.sin((pitch.angle * Math.PI) / 180) * thrust.front
 		);
 		const back_vertical = round(
-			Math.cos((pitch_angle * Math.PI) / 180) * back_thrust
+			Math.cos((pitch.angle * Math.PI) / 180) * thrust.back
 		);
 		const back_horizontal = round(
-			Math.sin((pitch_angle * Math.PI) / 180) * back_thrust
+			Math.sin((pitch.angle * Math.PI) / 180) * thrust.back
 		);
 
 		// Vertical Movement
 		if (options.disableHorizontal) {
-			vAcceleration = round(front_thrust + back_thrust - 9.81);
-		} else vAcceleration = round(front_vertical + back_vertical - 9.81);
-		vVelocity = round(vVelocity + round(vAcceleration / 100));
-		vDistance = round(vDistance + round(vVelocity / 100));
+			vertical.acceleration = round(thrust.front + thrust.back - 9.81);
+		} else
+			vertical.acceleration = round(
+				front_vertical + back_vertical - 9.81
+			);
+		vertical.velocity = round(
+			vertical.velocity + round(vertical.acceleration / 100)
+		);
+		vertical.distance = round(
+			vertical.distance + round(vertical.velocity / 100)
+		);
 
 		// Horizontal Movement
 		if (!options.disableHorizontal) {
-			hAcceleration = round(front_horizontal + back_horizontal);
-			console.log(hAcceleration);
-			hVelocity = round(hVelocity + round(hAcceleration / 100));
-			hDistance = round(hDistance + round(hVelocity / 100));
+			horizontal.acceleration = round(front_horizontal + back_horizontal);
+			console.log(horizontal.acceleration);
+			horizontal.velocity = round(
+				horizontal.velocity + round(horizontal.acceleration / 100)
+			);
+			horizontal.distance = round(
+				horizontal.distance + round(horizontal.velocity / 100)
+			);
 		}
 
 		const flightMoment: FlightData = {
 			mode: mode,
 			frontThrustComponents: {
-				total: front_thrust,
+				total: thrust.front,
 				vertical: front_vertical,
 				horizontal: front_horizontal,
 			},
 			backThrustComponents: {
-				total: back_thrust,
+				total: thrust.back,
 				vertical: back_vertical,
 				horizontal: back_horizontal,
 			},
 			vertical: {
-				acceleration: vAcceleration,
-				velocity: vVelocity,
-				distance: vDistance,
-				potMaxDistance: potMaxDistance,
+				acceleration: vertical.acceleration,
+				velocity: vertical.velocity,
+				distance: vertical.distance,
 			},
 			horizontal: {
-				acceleration: hAcceleration,
-				velocity: hVelocity,
-				distance: hDistance,
+				acceleration: horizontal.acceleration,
+				velocity: horizontal.velocity,
+				distance: horizontal.distance,
 			},
 			pitch: {
-				acceleration: pitchAcceleration,
-				velocity: pitchVelocity,
-				distance: pitchDistance,
-				degree: pitch_angle,
-				rad: round((pitch_angle * Math.PI) / 180),
+				acceleration: pitch.acceleration,
+				velocity: pitch.velocity,
+				distance: pitch.distance,
+				angle: pitch.angle,
+			},
+			prediction: {
+				altitude: defaultAltitude,
+				distance: defaultDistance,
 			},
 			logger: logger,
 		};

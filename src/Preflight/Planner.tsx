@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { Text, View } from "react-native";
-import { FlightData, FlightOptions } from "../App";
-import { calculateFlight } from "./calculations/main";
-import { margin } from "./constants";
+import { FlightData, FlightOptions } from "../../App";
+import { calculateFlight } from "../calculations/main";
+import { margin } from "../constants";
 import FlightOptionInputs from "./FlightOptionInputs";
 
 interface Props {
@@ -41,7 +41,15 @@ const Planner: React.FC<Props> = ({
 
 	return (
 		<View style={{ margin: margin }}>
-			<Text>Flight Planner</Text>
+			<Text style={{ fontSize: 30, fontWeight: "600" }}>
+				Flight Planner
+			</Text>
+			<View style={{ height: margin / 2 }} />
+			<Text>Click = Start / Stop</Text>
+			<Text>Drag = Go through Time</Text>
+			<View style={{ height: margin / 2 }} />
+			<Text>Try this out on a laptop.</Text>
+			<View style={{ height: margin / 2 }} />
 			<FlightOptionInputs {...{ setOptions }} />
 		</View>
 	);

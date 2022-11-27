@@ -1,77 +1,90 @@
 import { FlightOptions } from "../../App";
-import { hover_thrust, MAX_THRUST_PER_SIDE } from "../constants";
+import { MAX_THRUST_PER_SIDE } from "../constants";
 import { round } from "./common";
 
 export const runTakeoff = (
 	options: FlightOptions,
-	vAcceleration: number,
-	vVelocity: number,
-	vDistance: number,
-	back_thrust: number,
-	front_thrust: number,
+	vertical: {
+		acceleration: number;
+		velocity: number;
+		distance: number;
+	},
+	thrust: {
+		front: number;
+		back: number;
+	},
 	logger: string,
 	mode: string,
-	vMaxDistance: number
+	defaultAltitude: number
 ) => {
 	"worklet";
 
 	// CALCULATE ALTITUDE ON CUTTOFF
 	const potAcceleration = -9.81;
-	let potVelocity = vVelocity;
-	let potAltitude = vDistance;
+	let potVelocity = vertical.velocity;
+	let potAltitude = vertical.distance;
 	let max_altitude = -100000000;
 	for (let i = 0; i <= 2000; i++) {
 		potVelocity = potVelocity + potAcceleration / 100;
 		potAltitude = potAltitude + potVelocity / 100;
 		if (potAltitude > max_altitude) max_altitude = round(potAltitude);
 	}
-	vMaxDistance = max_altitude;
-	logger = vMaxDistance + "";
-
+	defaultAltitude = max_altitude;
+	/* 
 	// Switch to Cruise
 	if (
-		vDistance >= options.targetAltitude * 0.5 &&
-		vVelocity == 0 &&
-		vAcceleration == 0
+		vertical.distance >= options.targetAltitude * 0.5 &&
+		vertical.velocity == 0 &&
+		vertical.acceleration == 0
 	) {
 		mode = "tilt_to_cruise";
 	}
 
 	// Speed Correction
-	if (vVelocity < 0 && vAcceleration == 0) {
-		const correction_thrust = round((-vVelocity / 2) * 100 + 9.81 / 2);
+	if (vertical.velocity < 0 && vertical.acceleration == 0) {
+		const correction_thrust = round(
+			(-vertical.velocity / 2) * 100 + 9.81 / 2
+		);
 
-		front_thrust = Math.min(correction_thrust, MAX_THRUST_PER_SIDE);
-		back_thrust = Math.min(correction_thrust, MAX_THRUST_PER_SIDE);
+		thrust.front = Math.min(correction_thrust, MAX_THRUST_PER_SIDE);
+		thrust.back = Math.min(correction_thrust, MAX_THRUST_PER_SIDE);
 		console.log("speed correct", correction_thrust);
 	}
 
 	//  Thrust
-	else if (vMaxDistance <= options.targetAltitude * 0.8) {
-		front_thrust = MAX_THRUST_PER_SIDE;
-		back_thrust = MAX_THRUST_PER_SIDE;
+	else if (defaultAltitude <= options.targetAltitude * 0.8) {
+		thrust.front = MAX_THRUST_PER_SIDE;
+		thrust.back = MAX_THRUST_PER_SIDE;
 	}
 
 	// Hover
-	else if (vMaxDistance <= options.targetAltitude) {
-		front_thrust = hover_thrust;
-		back_thrust = hover_thrust;
+	else if (defaultAltitude <= options.targetAltitude) {
+		thrust.front = HOVER_THRUST;
+		thrust.back = HOVER_THRUST;
 	}
 
 	// Free Fall
 	else {
-		front_thrust = 0;
-		back_thrust = 0;
+		thrust.front = 0;
+		thrust.back = 0;
 	}
+ */
+	if (vertical.velocity <= 0 && vertical.distance >= options.targetAltitude) {
+		mode = "tilt_to_cruise";
+	} else if (defaultAltitude >= options.targetAltitude) {
+		thrust.front = 0;
+		thrust.back = 0;
+	} else {
+		thrust.front = MAX_THRUST_PER_SIDE;
+		thrust.back = MAX_THRUST_PER_SIDE;
+	}
+	logger = defaultAltitude + "";
 
 	return {
-		front_thrust,
-		back_thrust,
+		thrust,
 		logger,
 		mode,
-		vAcceleration,
-		vVelocity,
-		vDistance,
-		vMaxDistance,
+		vertical,
+		defaultAltitude,
 	};
 };

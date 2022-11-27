@@ -1,30 +1,29 @@
 import { FlightOptions } from "../../App";
-import { hover_thrust, thrust_differential } from "../constants";
+import { HOVER_THRUST, thrust_differential } from "../constants";
+import { DimensionData, PitchProps } from "../Flight/FlightWrapper";
 import { adjust_for_horizontal, round } from "./common";
 
 export const runTiltToCruise = (
 	options: FlightOptions,
 	tilting: boolean,
-	vAcceleration: number,
-	vVelocity: number,
-	pitch_angle: number,
-	pitchAcceleration: number,
-	pitchVelocity: number,
-	pitchDistance: number,
+	pitch: PitchProps,
+	vertical: DimensionData,
 	mode: string,
-	front_thrust: number,
-	back_thrust: number,
+	thrust: {
+		front: number;
+		back: number;
+	},
 	logger: string
 ) => {
 	//TILT CUTTOFF
 	if (tilting) {
 		const potPitchAcceleration = adjust_for_horizontal(
 			-thrust_differential * 2,
-			pitch_angle
+			pitch.angle
 		);
 		logger = potPitchAcceleration + "";
-		let potPitchVelocity = pitchVelocity;
-		let potPitchDistance = pitchDistance;
+		let potPitchVelocity = pitch.velocity;
+		let potPitchDistance = pitch.distance;
 		for (let j = 0; j <= 2000; j++) {
 			potPitchVelocity = potPitchVelocity + potPitchAcceleration / 100;
 			potPitchDistance = potPitchDistance + potPitchVelocity / 100;
@@ -33,106 +32,67 @@ export const runTiltToCruise = (
 				tilting = false;
 			}
 		}
-
-		/* if (pitch_angle >= options.maxPitch / 2) {
-		
-		} */
-
-		/* 
-		const potAcceleration = -9.81;
-		let potVelocity = vVelocity;
-		let potAltitude = vDistance;
-		for (let j = 0; j <= 2000; j++) {
-			potVelocity = potVelocity + potAcceleration / 100;
-			potAltitude = potAltitude + potVelocity / 100;
-			if (potAltitude >= options.targetAltitude) {
-				engines_running = false;
-				break;
-			}
-		} 
-		*/
 	}
 
 	//SWITCH TO CRUISE
 	if (
-		pitch_angle > options.maxPitch * 0.5 &&
-		pitchVelocity == 0 &&
-		pitchAcceleration == 0
+		pitch.angle > options.maxPitch * 0.5 &&
+		pitch.velocity == 0 &&
+		pitch.acceleration == 0
 	) {
-		logger = "speed correct: " + vVelocity;
 		mode = "cruise";
-	}
+		/* if (vertical.velocity <= 0) {		
+		} else {
+		} */
+	} else if (pitch.velocity < 0 && pitch.acceleration == 0) {
+		const correction_thrust = round((-pitch.velocity / 2) * 100);
 
-	// Pitch Speed Correction
-	else if (pitchVelocity < 0 && pitchAcceleration == 0) {
-		const correction_thrust = round((-pitchVelocity / 2) * 100);
-
-		front_thrust = adjust_for_horizontal(
+		thrust.front = adjust_for_horizontal(
 			9.81 / 2 - correction_thrust / 2,
-			pitch_angle
+			pitch.angle
 		);
-		back_thrust = adjust_for_horizontal(
+		thrust.back = adjust_for_horizontal(
 			9.81 / 2 + correction_thrust / 2,
-			pitch_angle
+			pitch.angle
 		);
 	}
 
 	// Idle
-	else if (pitch_angle > options.maxPitch * 0.5 && pitchVelocity <= 0) {
-		if (options.disableHorizontal) {
-			front_thrust = hover_thrust;
-			back_thrust = hover_thrust;
-		} else {
-			front_thrust = adjust_for_horizontal(hover_thrust, pitch_angle);
-			back_thrust = adjust_for_horizontal(hover_thrust, pitch_angle);
-		}
+	else if (pitch.angle > options.maxPitch * 0.5 && pitch.velocity <= 0) {
+		thrust.front = adjust_for_horizontal(HOVER_THRUST, pitch.angle);
+		thrust.back = adjust_for_horizontal(HOVER_THRUST, pitch.angle);
 	}
 
 	// Thrust
 	else if (tilting) {
-		if (options.disableHorizontal) {
-			front_thrust = hover_thrust - thrust_differential;
-			back_thrust = hover_thrust + thrust_differential;
-		} else {
-			front_thrust = adjust_for_horizontal(
-				hover_thrust - thrust_differential,
-				pitch_angle
-			);
-			back_thrust = adjust_for_horizontal(
-				hover_thrust + thrust_differential,
-				pitch_angle
-			);
-		}
+		thrust.front = adjust_for_horizontal(
+			HOVER_THRUST - thrust_differential,
+			pitch.angle
+		);
+		thrust.back = adjust_for_horizontal(
+			HOVER_THRUST + thrust_differential,
+			pitch.angle
+		);
 	}
 
 	// Reverse Thrust
 	else {
-		if (options.disableHorizontal) {
-			front_thrust = hover_thrust + thrust_differential;
-			back_thrust = hover_thrust - thrust_differential;
-		} else {
-			front_thrust = adjust_for_horizontal(
-				hover_thrust + thrust_differential,
-				pitch_angle
-			);
-			back_thrust = adjust_for_horizontal(
-				hover_thrust - thrust_differential,
-				pitch_angle
-			);
-		}
+		thrust.front = adjust_for_horizontal(
+			HOVER_THRUST + thrust_differential,
+			pitch.angle
+		);
+		thrust.back = adjust_for_horizontal(
+			HOVER_THRUST - thrust_differential,
+			pitch.angle
+		);
 	}
 
 	return {
 		tilting,
-		vAcceleration,
-		vVelocity,
-		pitch_angle,
-		pitchAcceleration,
-		pitchVelocity,
-		pitchDistance,
+		pitch,
+		vertical,
 		mode,
-		front_thrust,
-		back_thrust,
+		thrust,
 		logger,
 	};
 };

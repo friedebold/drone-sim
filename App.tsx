@@ -2,30 +2,19 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import { SafeAreaView, useWindowDimensions } from "react-native";
 import styled from "styled-components/native";
-import Flight from "./src/Flight";
-import Planner from "./src/Planner";
+import Flight, { DimensionData, PitchProps } from "./src/Flight/FlightWrapper";
+import Planner from "./src/Preflight/Planner";
 
 export interface FlightData {
 	mode: string;
 	frontThrustComponents: ThrustComponents;
 	backThrustComponents: ThrustComponents;
-	vertical: {
-		acceleration: number;
-		velocity: number;
+	vertical: DimensionData;
+	horizontal: DimensionData;
+	pitch: PitchProps;
+	prediction: {
+		altitude: number;
 		distance: number;
-		potMaxDistance: number;
-	};
-	horizontal: {
-		acceleration: number;
-		velocity: number;
-		distance: number;
-	};
-	pitch: {
-		acceleration: number;
-		velocity: number;
-		distance: number;
-		degree: number;
-		rad: number;
 	};
 	logger: string;
 }
